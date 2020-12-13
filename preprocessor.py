@@ -38,7 +38,8 @@ def preprocessor(instances, stopwords=False, stemming=False):
     intensities = []
 
     for k, v in instances.items():
-        tokens = nltk.word_tokenize(v.tweet.lower())
+        tokenizer = nltk.tokenize.TweetTokenizer(preserve_case=False, reduce_len=True)
+        tokens = tokenizer.tokenize(v.tweet)
 
         if stemming:
             stemmer = nltk.stem.PorterStemmer()
@@ -48,9 +49,6 @@ def preprocessor(instances, stopwords=False, stemming=False):
             processed_tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in sw]
 
         v.tweet = ' '.join(w for w in processed_tokens)
-        tweets.append(v.tweet)
-        sentiments.append(v.sentiment)
-        intensities.append(v.intensity)
 
     return instances
 
