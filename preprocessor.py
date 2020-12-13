@@ -36,7 +36,7 @@ def preprocessor(instances, stopwords=False, stemming=False):
     sentiments = []
     intensities = []
 
-    for k,v in instances.items():
+    for k, v in instances.items():
         tokens = nltk.word_tokenize(v.tweet.lower())
 
         if stemming:
@@ -76,5 +76,3 @@ if __name__ == '__main__':
 
     train_instances = preprocessor(train_instances, stopwords=True)
     tweets_train, sentiments_train, intensities_train = get_ordered_lists(train_instances)
-
-
