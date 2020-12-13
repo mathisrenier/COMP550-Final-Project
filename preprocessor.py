@@ -8,6 +8,7 @@ import weka.core.jvm as jvm
 import weka.core.packages as packages
 
 
+
 def install_package(pkg):
     # install package if necessary
     if not packages.is_installed(pkg):
@@ -67,12 +68,16 @@ def get_ordered_lists(instances):
     return tweets, sentiments, intensities
 
 
-if __name__ == '__main__':
-    # jvm.start(packages=True)
-    # install_package('AffectiveTweets')
-    # jvm.stop()
 
-    train_instances, dev_instances, test_instances = loader.main()
+if __name__ == '__main__':
+    jvm.start(packages=True)
+
+    install_package('AffectiveTweets')
+    anger_train = loader.load_weka_data('data/weka-format/anger-ratings-0to1.train.dev.arff')
+
+    jvm.stop()
+
+    train_instances, dev_instances, test_instances = loader.load_instances()
 
     train_instances = preprocessor(train_instances, stopwords=True)
     tweets_train, sentiments_train, intensities_train = get_ordered_lists(train_instances)

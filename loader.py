@@ -1,5 +1,6 @@
 # COMP 550 FINAL PROJECT
 
+from weka.core.converters import Loader
 
 class EmoIntInstance:
     def __init__(self, id, tweet, sentiment, intensity):
@@ -11,7 +12,7 @@ class EmoIntInstance:
     def __str__(self):
         return '%s\t%s\t%s\t%d' % (self.id, self.tweet, self.sentiment, self.intensity)
 
-def load_instances(file):
+def create_instances(file):
     lines  = open(file).read().splitlines()
     instances = {}
 
@@ -26,21 +27,21 @@ def load_instances(file):
     return instances
 
 
-def main():
-    anger_train = load_instances('data/train/anger-ratings-0to1.train.txt')
-    fear_train = load_instances('data/train/fear-ratings-0to1.train.txt')
-    joy_train = load_instances('data/train/joy-ratings-0to1.train.txt')
-    sad_train = load_instances('data/train/sadness-ratings-0to1.train.txt')
+def load_instances():
+    anger_train = create_instances('data/train/anger-ratings-0to1.train.txt')
+    fear_train = create_instances('data/train/fear-ratings-0to1.train.txt')
+    joy_train = create_instances('data/train/joy-ratings-0to1.train.txt')
+    sad_train = create_instances('data/train/sadness-ratings-0to1.train.txt')
 
-    anger_dev = load_instances('data/dev/anger-ratings-0to1.dev.gold.txt')
-    fear_dev = load_instances('data/dev/fear-ratings-0to1.dev.gold.txt')
-    joy_dev = load_instances('data/dev/joy-ratings-0to1.dev.gold.txt')
-    sad_dev = load_instances('data/dev/sadness-ratings-0to1.dev.gold.txt')
+    anger_dev = create_instances('data/dev/anger-ratings-0to1.dev.gold.txt')
+    fear_dev = create_instances('data/dev/fear-ratings-0to1.dev.gold.txt')
+    joy_dev = create_instances('data/dev/joy-ratings-0to1.dev.gold.txt')
+    sad_dev = create_instances('data/dev/sadness-ratings-0to1.dev.gold.txt')
 
-    anger_test = load_instances('data/test/anger-ratings-0to1.test.gold.txt')
-    fear_test = load_instances('data/test/fear-ratings-0to1.test.gold.txt')
-    joy_test = load_instances('data/test/joy-ratings-0to1.test.gold.txt')
-    sad_test = load_instances('data/test/sadness-ratings-0to1.test.gold.txt')
+    anger_test = create_instances('data/test/anger-ratings-0to1.test.gold.txt')
+    fear_test = create_instances('data/test/fear-ratings-0to1.test.gold.txt')
+    joy_test = create_instances('data/test/joy-ratings-0to1.test.gold.txt')
+    sad_test = create_instances('data/test/sadness-ratings-0to1.test.gold.txt')
 
 
     train_instances = {**anger_train, **fear_train, **joy_train, **sad_train}
@@ -49,5 +50,8 @@ def main():
     return train_instances, dev_instances, test_instances
 
 
-if __name__ == '__main__':
-    main()
+def load_weka_data(file):
+    loader = Loader('weka.core.converters.ArffLoader')
+    data = loader.load_file(file)
+    return data
+
