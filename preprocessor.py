@@ -3,7 +3,10 @@
 import loader
 import nltk
 import sys
+import csv
 import string
+import pandas as pd
+import numpy as np
 import weka.core.jvm as jvm
 import weka.core.packages as packages
 import weka.core.dataset as dataset
@@ -58,21 +61,32 @@ def preprocessor(instances, stopwords=False, stemming=False):
     return instances
 
 
-def affective_preprocessor(tweets):
+def extract_vectors(file):
+    data_frame = pd.read_csv(file, skiprows=1, header=None, usecols=range(1,44))
+    vectors = data_frame.to_numpy()
+    return vectors
+
+
+def affective_vectorizer(tweets_train, tweets_dev, tweets_test):
     jvm.start(packages=True)
     install_package('AffectiveTweets')
 
-    data = dataset.create_instances_from_lists([[t] for t in tweets])
+    data_train = dataset.create_instances_from_lists([[t] for t in tweets_train])
+    data_dev = dataset.create_instances_from_lists([[t] for t in tweets_dev])
+    data_test = dataset.create_instances_from_lists([[t] for t in tweets_test])
+
     filter = Filter(classname='weka.filters.unsupervised.attribute.TweetToLexiconFeatureVector',
                     options=['-F', '-D', '-R', '-A', '-T', '-L', '-N', '-P', '-J', '-H', '-Q',
                              '-stemmer', 'weka.core.stemmers.NullStemmer',
                              '-stopwords-handler', 'weka.core.tokenizers.TweetNLPTokenizer',
                              '-I', '1', '-U',
                              '-tokenizer', 'weka.core.tokenizers.TweetNLPTokenizer'])
-    filter.inputformat(data)
-    filtered_data = filter.filter(data)
+    filter.inputformat(data_train)
+    filtered_data = filter.filter([data_train, data_dev, data_test])
 
-    converters.save_any_file(filtered_data, 'temp.csv')
+    converters.save_any_file(filtered_data[0], 'data/affect-vectors/train.csv')
+    converters.save_any_file(filtered_data[1], 'data/affect-vectors/dev.csv')
+    converters.save_any_file(filtered_data[2], 'data/affect-vectors/test.csv')
 
     jvm.stop()
 
@@ -94,6 +108,15 @@ if __name__ == '__main__':
     train_instances, dev_instances, test_instances = loader.load_instances()
 
     train_instances = preprocessor(train_instances, stopwords=True)
-    tweets_train, sentiments_train, intensities_train = get_ordered_lists(train_instances)
+    dev_instances = preprocessor(dev_instances, stopwords=True)
+    test_instances = preprocessor(test_instances, stopwords=True)
 
-    affective_preprocessor(tweets_train)
+    tweets_train, sentiments_train, intensities_train = get_ordered_lists(train_instances)
+    tweets_dev, sentiments_dev, intensities_dev = get_ordered_lists(dev_instances)
+    tweets_test, sentiments_test, intensities_test = get_ordered_lists(test_instances)
+
+    # affective_vectorizer(tweets_train, tweets_dev, tweets_test)
+
+    affect_vect_train = extract_vectors('data/affect-vectors/train.csv')
+    affect_vect_dev = extract_vectors('data/affect-vectors/dev.csv')
+    affect_vect_test = extract_vectors('data/affect-vectors/test.csv')
