@@ -6,6 +6,10 @@ import sys
 import string
 import weka.core.jvm as jvm
 import weka.core.packages as packages
+import weka.core.dataset as dataset
+import weka.core.converters as converters
+from weka.filters import Filter
+
 
 
 
@@ -49,8 +53,28 @@ def preprocessor(instances, stopwords=False, stemming=False):
             processed_tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in sw]
 
         v.tweet = ' '.join(w for w in processed_tokens)
+        v.tweet = v.tweet.replace(',', '')  # to avoid errors if we generate a csv
 
     return instances
+
+
+def affective_preprocessor(tweets):
+    jvm.start(packages=True)
+    install_package('AffectiveTweets')
+
+    data = dataset.create_instances_from_lists([[t] for t in tweets])
+    filter = Filter(classname='weka.filters.unsupervised.attribute.TweetToLexiconFeatureVector',
+                    options=['-F', '-D', '-R', '-A', '-T', '-L', '-N', '-P', '-J', '-H', '-Q',
+                             '-stemmer', 'weka.core.stemmers.NullStemmer',
+                             '-stopwords-handler', 'weka.core.tokenizers.TweetNLPTokenizer',
+                             '-I', '1', '-U',
+                             '-tokenizer', 'weka.core.tokenizers.TweetNLPTokenizer'])
+    filter.inputformat(data)
+    filtered_data = filter.filter(data)
+
+    converters.save_any_file(filtered_data, 'temp.csv')
+
+    jvm.stop()
 
 
 def get_ordered_lists(instances):
@@ -66,16 +90,10 @@ def get_ordered_lists(instances):
     return tweets, sentiments, intensities
 
 
-
 if __name__ == '__main__':
-    jvm.start(packages=True)
-
-    install_package('AffectiveTweets')
-    anger_train = loader.load_weka_data('data/weka-format/anger-ratings-0to1.train.dev.arff')
-
-    jvm.stop()
-
     train_instances, dev_instances, test_instances = loader.load_instances()
 
     train_instances = preprocessor(train_instances, stopwords=True)
     tweets_train, sentiments_train, intensities_train = get_ordered_lists(train_instances)
+
+    affective_preprocessor(tweets_train)
