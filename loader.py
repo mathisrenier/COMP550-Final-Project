@@ -1,6 +1,5 @@
 # COMP 550 FINAL PROJECT
 
-from weka.core.converters import Loader
 
 class EmoIntInstance:
     def __init__(self, id, tweet, sentiment, intensity):
@@ -47,11 +46,5 @@ def load_instances():
     train_instances = {**anger_train, **fear_train, **joy_train, **sad_train}
     dev_instances = {**anger_dev, **fear_dev, **joy_dev, **sad_dev}
     test_instances = {**anger_test, **fear_test, **joy_test, **sad_test}
+
     return train_instances, dev_instances, test_instances
-
-
-def load_weka_data(file):
-    loader = Loader('weka.core.converters.ArffLoader')
-    data = loader.load_file(file)
-    return data
-

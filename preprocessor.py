@@ -3,7 +3,6 @@
 import loader
 import nltk
 import sys
-import csv
 import string
 import pandas as pd
 import numpy as np
@@ -12,8 +11,6 @@ import weka.core.packages as packages
 import weka.core.dataset as dataset
 import weka.core.converters as converters
 from weka.filters import Filter
-
-
 
 
 def install_package(pkg):
