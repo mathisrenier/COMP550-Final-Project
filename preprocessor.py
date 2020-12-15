@@ -136,12 +136,12 @@ if __name__ == '__main__':
     affective_vectorizer(tweets_anger_train, 'train/anger.csv')
     affective_vectorizer(tweets_fear_train, 'train/fear.csv')
     affective_vectorizer(tweets_joy_train, 'train/joy.csv')
-    affective_vectorizer(tweets_anger_train, 'train/sad.csv')
+    affective_vectorizer(tweets_sad_train, 'train/sad.csv')
 
     affective_vectorizer(tweets_anger_test, 'test/anger.csv')
     affective_vectorizer(tweets_fear_test, 'test/fear.csv')
     affective_vectorizer(tweets_joy_test, 'test/joy.csv')
-    affective_vectorizer(tweets_anger_test, 'test/sad.csv')
+    affective_vectorizer(tweets_sad_test, 'test/sad.csv')
 
     # extract vectors from csv for whole datasets
     vect_train = extract_vectors('data/affect-vectors/train/whole_train.csv')
@@ -157,3 +157,5 @@ if __name__ == '__main__':
     fear_vect_test = extract_vectors('data/affect-vectors/test/fear.csv')
     joy_vect_test = extract_vectors('data/affect-vectors/test/joy.csv')
     sad_vect_test = extract_vectors('data/affect-vectors/test/sad.csv')
+
+    print(tweets_sad_test)
