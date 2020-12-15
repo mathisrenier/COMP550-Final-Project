@@ -64,13 +64,11 @@ def extract_vectors(file):
     return vectors
 
 
-def affective_vectorizer(tweets_train, tweets_dev, tweets_test):
+def affective_vectorizer(tweets, filename):
     jvm.start(packages=True)
     install_package('AffectiveTweets')
 
-    data_train = dataset.create_instances_from_lists([[t] for t in tweets_train])
-    data_dev = dataset.create_instances_from_lists([[t] for t in tweets_dev])
-    data_test = dataset.create_instances_from_lists([[t] for t in tweets_test])
+    data = dataset.create_instances_from_lists([[t] for t in tweets])
 
     filter = Filter(classname='weka.filters.unsupervised.attribute.TweetToLexiconFeatureVector',
                     options=['-F', '-D', '-R', '-A', '-T', '-L', '-N', '-P', '-J', '-H', '-Q',
@@ -78,12 +76,10 @@ def affective_vectorizer(tweets_train, tweets_dev, tweets_test):
                              '-stopwords-handler', 'weka.core.tokenizers.TweetNLPTokenizer',
                              '-I', '1', '-U',
                              '-tokenizer', 'weka.core.tokenizers.TweetNLPTokenizer'])
-    filter.inputformat(data_train)
-    filtered_data = filter.filter([data_train, data_dev, data_test])
+    filter.inputformat(data)
+    filtered_data = filter.filter(data)
 
-    converters.save_any_file(filtered_data[0], 'data/affect-vectors/train.csv')
-    converters.save_any_file(filtered_data[1], 'data/affect-vectors/dev.csv')
-    converters.save_any_file(filtered_data[2], 'data/affect-vectors/test.csv')
+    converters.save_any_file(filtered_data, 'data/affect-vectors/'+filename)
 
     jvm.stop()
 
@@ -102,18 +98,62 @@ def get_ordered_lists(instances):
 
 
 if __name__ == '__main__':
-    train_instances, dev_instances, test_instances = loader.load_instances()
+    # load whole instances
+    train_instances, test_instances = loader.load_instances()
 
+    # load separated instances
+    anger_train, fear_train, joy_train, sad_train = loader.load_instances_separated(type='train')
+    anger_test, fear_test, joy_test, sad_test = loader.load_instances_separated(type='test')
+
+    # preprocess whole instances
     train_instances = preprocessor(train_instances, stopwords=True)
-    dev_instances = preprocessor(dev_instances, stopwords=True)
     test_instances = preprocessor(test_instances, stopwords=True)
 
+    # preprocess separated instances
+    for i in [anger_train, fear_train, joy_train, sad_train, anger_test, fear_test, joy_test, sad_test]:
+        i = preprocessor(i, stopwords=True)
+
+    # create ordered lists from whole instances
     tweets_train, sentiments_train, intensities_train = get_ordered_lists(train_instances)
-    tweets_dev, sentiments_dev, intensities_dev = get_ordered_lists(dev_instances)
     tweets_test, sentiments_test, intensities_test = get_ordered_lists(test_instances)
 
-    # affective_vectorizer(tweets_train, tweets_dev, tweets_test)
+    # create ordered lists from separated instances
+    tweets_anger_train, sentiments_anger_train, intensities_anger_train = get_ordered_lists(anger_train)
+    tweets_fear_train, sentiments_fear_train, intensities_fear_train = get_ordered_lists(fear_train)
+    tweets_joy_train, sentiments_joy_train, intensities_joy_train = get_ordered_lists(joy_train)
+    tweets_sad_train, sentiments_sad_train, intensities_sad_train = get_ordered_lists(sad_train)
 
-    affect_vect_train = extract_vectors('data/affect-vectors/train.csv')
-    affect_vect_dev = extract_vectors('data/affect-vectors/dev.csv')
-    affect_vect_test = extract_vectors('data/affect-vectors/test.csv')
+    tweets_anger_test, sentiments_anger_test, intensities_anger_test = get_ordered_lists(anger_test)
+    tweets_fear_test, sentiments_fear_test, intensities_fear_test = get_ordered_lists(fear_test)
+    tweets_joy_test, sentiments_joy_test, intensities_joy_test = get_ordered_lists(joy_test)
+    tweets_sad_test, sentiments_sad_test, intensities_sad_test = get_ordered_lists(sad_test)
+
+    # create csv vector files for whole tweet lists
+    affective_vectorizer(tweets_train, 'train/whole_train.csv')
+    affective_vectorizer(tweets_test, 'test/whole_test.csv')
+
+    # create csv vector files for separated tweets
+    affective_vectorizer(tweets_anger_train, 'train/anger.csv')
+    affective_vectorizer(tweets_fear_train, 'train/fear.csv')
+    affective_vectorizer(tweets_joy_train, 'train/joy.csv')
+    affective_vectorizer(tweets_anger_train, 'train/sad.csv')
+
+    affective_vectorizer(tweets_anger_test, 'test/anger.csv')
+    affective_vectorizer(tweets_fear_test, 'test/fear.csv')
+    affective_vectorizer(tweets_joy_test, 'test/joy.csv')
+    affective_vectorizer(tweets_anger_test, 'test/sad.csv')
+
+    # extract vectors from csv for whole datasets
+    vect_train = extract_vectors('data/affect-vectors/train/whole_train.csv')
+    vect_test = extract_vectors('data/affect-vectors/test/whole_test.csv')
+
+    # extract vectors from csv for separated datasets
+    anger_vect_train = extract_vectors('data/affect-vectors/train/anger.csv')
+    fear_vect_train = extract_vectors('data/affect-vectors/train/fear.csv')
+    joy_vect_train = extract_vectors('data/affect-vectors/train/joy.csv')
+    sad_vect_train = extract_vectors('data/affect-vectors/train/sad.csv')
+
+    anger_vect_test = extract_vectors('data/affect-vectors/test/anger.csv')
+    fear_vect_test = extract_vectors('data/affect-vectors/test/fear.csv')
+    joy_vect_test = extract_vectors('data/affect-vectors/test/joy.csv')
+    sad_vect_test = extract_vectors('data/affect-vectors/test/sad.csv')

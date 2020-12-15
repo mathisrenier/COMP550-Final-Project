@@ -26,6 +26,32 @@ def create_instances(file):
     return instances
 
 
+def load_instances_separated(type='train'):
+    assert type == 'train' or type == 'test', 'Invalid instance type, try train/test'
+
+    if type == 'train':
+        anger_train = create_instances('data/train/anger-ratings-0to1.train.txt')
+        fear_train = create_instances('data/train/fear-ratings-0to1.train.txt')
+        joy_train = create_instances('data/train/joy-ratings-0to1.train.txt')
+        sad_train = create_instances('data/train/sadness-ratings-0to1.train.txt')
+
+        anger_dev = create_instances('data/dev/anger-ratings-0to1.dev.gold.txt')
+        fear_dev = create_instances('data/dev/fear-ratings-0to1.dev.gold.txt')
+        joy_dev = create_instances('data/dev/joy-ratings-0to1.dev.gold.txt')
+        sad_dev = create_instances('data/dev/sadness-ratings-0to1.dev.gold.txt')
+
+        anger_instances = {**anger_train, **anger_dev}
+        fear_instances = {**fear_train, **fear_dev}
+        joy_instances = {**joy_train, **joy_dev}
+        sad_instances = {**sad_train, **sad_dev}
+    else:
+        anger_instances = create_instances('data/test/anger-ratings-0to1.test.gold.txt')
+        fear_instances = create_instances('data/test/fear-ratings-0to1.test.gold.txt')
+        joy_instances = create_instances('data/test/joy-ratings-0to1.test.gold.txt')
+        sad_instances = create_instances('data/test/sadness-ratings-0to1.test.gold.txt')
+
+    return anger_instances, fear_instances, joy_instances, sad_instances
+
 def load_instances():
     anger_train = create_instances('data/train/anger-ratings-0to1.train.txt')
     fear_train = create_instances('data/train/fear-ratings-0to1.train.txt')
@@ -47,4 +73,6 @@ def load_instances():
     dev_instances = {**anger_dev, **fear_dev, **joy_dev, **sad_dev}
     test_instances = {**anger_test, **fear_test, **joy_test, **sad_test}
 
-    return train_instances, dev_instances, test_instances
+    train_instances = {**train_instances, **dev_instances}
+
+    return train_instances, test_instances
