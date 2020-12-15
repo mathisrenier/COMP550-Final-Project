@@ -14,7 +14,7 @@ from weka.filters import Filter
 
 
 def install_package(pkg):
-    # install package if necessary
+    # install weka package if necessary
     if not packages.is_installed(pkg):
         print("Installing %s..." % pkg)
         packages.install_package(pkg)
@@ -35,6 +35,13 @@ def remove_package(pkg):
 
 
 def preprocessor(instances, stopwords=False, stemming=False):
+    '''
+    Preprocesses each tweet in instances.
+    :param instances: Dict of EmoIntInstance
+    :param stopwords: If True, removes stopwords
+    :param stemming:  Stems if True, other wize lemmatizes
+    :return: Preprocessed dict of EmoIntInstance
+    '''
     sw = nltk.corpus.stopwords.words('english') + list(string.punctuation) if stopwords else []
 
     tweets = []
@@ -59,12 +66,22 @@ def preprocessor(instances, stopwords=False, stemming=False):
 
 
 def extract_vectors(file):
+    '''
+    Creates a 2d numpy array from a csv file
+    :param file: Path of the file (str)
+    :return: A 2d numpy array of the tweet vectors
+    '''
     data_frame = pd.read_csv(file, skiprows=1, header=None, usecols=range(1,44))
     vectors = data_frame.to_numpy()
     return vectors
 
 
 def affective_vectorizer(tweets, filename):
+    '''
+    Vectorizes the tweets and saves the vectors as csv.
+    :param tweets: list of tweets
+    :param filename: name of the saved file
+    '''
     jvm.start(packages=True)
     install_package('AffectiveTweets')
 
@@ -85,6 +102,11 @@ def affective_vectorizer(tweets, filename):
 
 
 def get_ordered_lists(instances):
+    '''
+    Creates lists from the dict of instances
+    :param instances: dict of EmoIntInstance
+    :return: 3 lists of the elements of instances, in the same order
+    '''
     tweets = []
     sentiments = []
     intensities = []
@@ -98,6 +120,11 @@ def get_ordered_lists(instances):
 
 
 def get_affect_vectors(type='train', emotion='anger'):
+    '''
+    :param type: 'train' or 'test'
+    :param emotion: 'anger', 'fear', 'joy' or 'sad'
+    :return: A tuple (vectors, intensities), with vectors being a 2d numpy array and intensities being a list of floats.
+    '''
     assert type == 'train' or type == 'test', 'Invalid instance type, try train/test'
     assert emotion == 'anger' or emotion == 'fear' or emotion == 'joy' or emotion == 'sad', 'Invalid emotion, try anger/fear/joy/sad'
 
